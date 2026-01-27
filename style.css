@@ -1,61 +1,171 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap');
+/* --- VARIABLES DE COLOR (Personaliza aquí) --- */
+:root {
+    --v-red: #ff4655;          /* Rojo principal Valorant */
+    --v-dark: #0f1923;         /* Fondo oscuro de la web */
+    --v-panel: #1f2326;        /* Fondo del recuadro de premio */
+    --v-cyan: #00f0ff;         /* Color del texto "Buscando Partida" */
+    --v-lobby-btn: #4a4a4a;    /* Color del botón Volver al Lobby */
+}
 
 body {
-    background: #0f1923;
-    height: 100vh; margin: 0;
-    display: flex; justify-content: center; align-items: center;
+    background: var(--v-dark);
+    height: 100vh; 
+    margin: 0;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
     font-family: 'Rajdhani', sans-serif;
     overflow: hidden;
+    color: white;
 }
 
+/* --- BOTÓN GENERAL (START) --- */
 .v-btn-play {
-    background: #ff4655; color: white; border: none;
-    padding: 15px 80px; font-size: 32px; font-style: italic;
-    cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-    transition: 0.2s; font-weight: 700;
+    background: var(--v-red);
+    color: white; 
+    border: none;
+    padding: 15px 80px; 
+    font-size: 32px; 
+    font-style: italic;
+    cursor: pointer; 
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+    transition: 0.2s; 
+    font-weight: 700;
+    box-shadow: -6px 6px 0px #000;
+    z-index: 2;
 }
-.v-btn-play:hover { background: white; color: #ff4655; }
 
-.csgo-overlay { width: 100%; max-width: 900px; text-align: center; }
+.v-btn-play:hover { 
+    background: white; 
+    color: var(--v-red); 
+    transform: scale(1.05); 
+}
+
+/* --- BOTÓN VOLVER AL LOBBY --- */
+.btn-small { 
+    font-size: 18px; 
+    padding: 10px 40px; 
+    background: var(--v-lobby-btn) !important;
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-top: 20px;
+}
+
+.btn-small:hover {
+    background: white !important;
+    color: black !important;
+}
+
+/* --- CONTENEDOR DE LA RULETA --- */
+.csgo-overlay { 
+    width: 100%; 
+    max-width: 900px; 
+    text-align: center; 
+    display: none; 
+}
 
 .roulette-viewport {
-    position: relative; width: 100%; height: 160px;
+    position: relative; 
+    width: 100%; 
+    height: 160px;
     background: rgba(0, 0, 0, 0.85);
-    overflow: hidden; border-top: 2px solid #333; border-bottom: 2px solid #333;
+    overflow: hidden; 
+    border-top: 2px solid #333; 
+    border-bottom: 2px solid #333;
 }
 
-.items-wrap { display: flex; position: absolute; height: 100%; will-change: transform; }
+/* DIFUMINADO LATERAL DE LA RULETA */
+.roulette-viewport::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to right, 
+        var(--v-dark) 0%, 
+        rgba(15, 25, 35, 0) 20%, 
+        rgba(15, 25, 35, 0) 80%, 
+        var(--v-dark) 100%);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.items-wrap { 
+    display: flex; 
+    position: absolute; 
+    height: 100%; 
+    will-change: transform; 
+}
 
 .item {
-    min-width: 160px; height: 100%;
-    display: flex; align-items: center; justify-content: center;
+    min-width: 160px; 
+    height: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
     border-right: 1px solid #222;
     background: linear-gradient(0deg, #111 0%, #1a1a1a 100%);
 }
 
-.item img { width: 110px; height: 110px; object-fit: contain; }
-
-.selector {
-    position: absolute; left: 50%; width: 4px; height: 100%;
-    background: #ff4655; z-index: 10; transform: translateX(-50%);
-    box-shadow: 0 0 20px #ff4655;
+.item img { 
+    width: 110px; 
+    height: 110px; 
+    object-fit: contain; 
 }
 
-/* MODAL DE RECOMPENSA */
+.selector {
+    position: absolute; 
+    left: 50%; 
+    width: 4px; 
+    height: 100%;
+    background: var(--v-red); 
+    z-index: 10; 
+    transform: translateX(-50%);
+    box-shadow: 0 0 20px var(--v-red);
+}
+
+/* --- TEXTO DE ESTADO --- */
+.status-text { 
+    letter-spacing: 5px; 
+    margin-top: 20px; 
+    font-weight: 700;
+    color: var(--v-cyan);
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+}
+
+/* --- RECOMPENSA (MODAL TRANSPARENTE) --- */
 .reward-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 100;
+    position: fixed; 
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0); /* Fondo invisible */
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 100;
+    backdrop-filter: blur(5px); /* Desenfoca la ruleta de fondo */
 }
 
 .reward-content {
-    text-align: center; background: #1f2326; padding: 50px;
-    border: 2px solid #ff4655; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+    text-align: center; 
+    background: var(--v-panel); 
+    padding: 50px;
+    border: 2px solid var(--v-red); 
+    clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), 0 0 20px var(--v-red);
+}
+
+.reward-title { 
+    color: var(--v-red); 
+    letter-spacing: 3px; 
+    margin-bottom: 20px; 
 }
 
 #winner-img {
-    width: 250px; height: 250px; object-fit: contain;
-    filter: drop-shadow(0 0 30px #ff4655);
+    width: 250px; 
+    height: 250px; 
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px var(--v-red));
     animation: pop 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49);
 }
 
-@keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1.1); } }
+@keyframes pop { 
+    0% { transform: scale(0); } 
+    100% { transform: scale(1.1); } 
+}
