@@ -40,7 +40,7 @@ function init() {
 
 playBtn.addEventListener('click', () => {
     lobby.style.display = 'none';
-    roulette.style.display = 'block';
+    roulette.style.display = 'none';
 
     setTimeout(() => {
         const winningIdx = 80; 
@@ -52,9 +52,10 @@ playBtn.addEventListener('click', () => {
 
 itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
-                // roulette.style.display = 'none';  <-- BORRA O COMENTA ESTA LÍNEA
+                // ELIMINA O COMENTA ESTA LÍNEA -> roulette.style.display = 'none'; 
+                
                 winnerImg.src = itemsOrder[winningIdx];
-                rewardDisplay.style.display = 'flex';
+                rewardDisplay.style.display = 'flex'; // Esto muestra el premio encima
             }, 500);
         }, { once: true });
     }, 100);
