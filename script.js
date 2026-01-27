@@ -43,53 +43,28 @@ playBtn.addEventListener('click', () => {
     roulette.style.display = 'block';
 
     setTimeout(() => {
+        // Elegimos un índice objetivo (caja 80)
         const winningIdx = 80; 
-        const landingPos = (winningIdx * itemWidth) - (roulette.offsetWidth / 2) + (itemWidth / 2);
-        const randomExtra = Math.floor(Math.random() * 80) - 40;
-
-        itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
-        itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
-
-        itemsContainer.addEventListener('transitionend', () => {
-            setTimeout(() => {
-                // AQUÍ ESTABA EL FALLO: Ahora la línea está activa (sin las barras //)
-                roulette.style.display = 'none'; 
-                
-                winnerImg.src = itemsOrder[winningIdx];
-                rewardDisplay.style.display = 'flex'; 
-            }, 500);
-        }, { once: true });
-    }, 100);
-});
-
-playBtn.addEventListener('click', () => {
-    lobby.style.display = 'none';
-    roulette.style.display = 'block';
-
-    setTimeout(() => {
-        // 1. Elegimos un destino lejano (entre la caja 70 y 90)
-        const winningIdx = Math.floor(Math.random() * 20) + 70; 
-        
-        // 2. Calculamos la posición para que esa caja quede centrada
         const centerOffset = roulette.offsetWidth / 2;
         const landingPos = (winningIdx * itemWidth) - centerOffset + (itemWidth / 2);
         
-        // 3. Añadimos un extra aleatorio limitado (máximo 40% del ancho de la caja)
-        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.8)) - (itemWidth * 0.4);
+        // Extra aleatorio para que no caiga siempre igual
+        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.6)) - (itemWidth * 0.3);
 
         itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
         itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
 
         itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
-                // CALCULAMOS QUÉ CAJA ESTÁ REALMENTE BAJO EL SELECTOR
+                // LEEMOS LA POSICIÓN REAL FINAL
                 const style = window.getComputedStyle(itemsContainer);
                 const matrix = new WebKitCSSMatrix(style.transform);
                 const finalTransform = Math.abs(matrix.m41);
                 
-                // Esta es la cuenta matemática que no falla:
+                // Calculamos qué caja está realmente en el centro
                 const realWinnerIdx = Math.round((finalTransform + centerOffset - (itemWidth / 2)) / itemWidth);
                 
+                // Escondemos ruleta y mostramos premio exacto
                 roulette.style.display = 'none';
                 winnerImg.src = itemsOrder[realWinnerIdx]; 
                 rewardDisplay.style.display = 'flex';
