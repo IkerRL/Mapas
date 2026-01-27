@@ -112,14 +112,18 @@ body {
 }
 
 .reward-content {
-    /* Si quieres que el cartel del mapa tenga un poco de fondo para que se lea: */
-    background: rgba(31, 35, 38, 0.9); 
-    /* Si quieres que el cartel también sea 100% transparente, pon: background: transparent; */
+    /* Color sólido oscuro de Valorant (no traspasa nada) */
+    background: #1f2326; 
     
     padding: 50px;
-    border: 2px solid var(--v-red);
+    border: 3px solid var(--v-red); /* Un poco más grueso para que destaque */
     clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+    
+    /* Sombra negra para separarlo visualmente de la ruleta */
+    box-shadow: 0 0 0 1000px rgba(0,0,0,0.7); 
+    
+    position: relative;
+    z-index: 101;
 }
 
 #winner-img {
