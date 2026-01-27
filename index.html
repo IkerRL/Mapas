@@ -1,36 +1,21 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valorant Roulette</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<div id="lobby">
+    <button id="playBtn" class="v-btn-play">START</button>
+</div>
 
-    <div id="lobby">
-        <button id="playBtn" class="v-btn-play">START</button>
+<div id="roulette-container" class="csgo-overlay" style="display: none;">
+    <div class="roulette-viewport">
+        <div class="selector"></div>
+        <div class="items-wrap" id="items"></div>
     </div>
+    <p id="status">BUSCANDO PARTIDA...</p>
+</div>
 
-    <div id="roulette-container" class="csgo-overlay">
-        <div class="roulette-viewport">
-            <div class="selector"></div>
-            <div id="items" class="items-wrap"></div>
+<div id="reward-display" class="reward-overlay" style="display: none;">
+    <div class="reward-content">
+        <h2 class="reward-title">PARTIDA ENCONTRADA</h2>
+        <div class="reward-image-container">
+            <img id="winner-img" src="" alt="Winner">
         </div>
-        <p class="status-text">BUSCANDO PARTIDA...</p>
+        <button onclick="resetGame()" class="v-btn-play" style="font-size: 18px; padding: 10px 40px;">VOLVER AL LOBBY</button>
     </div>
-
-    <div id="reward-display" class="reward-overlay">
-        <div class="reward-content">
-            <h2 class="reward-title">RECOMPENSA OBTENIDA</h2>
-            <div class="winner-box">
-                <img id="winner-img" src="" alt="Premio">
-            </div>
-            <button onclick="resetGame()" class="v-btn-play btn-small">VOLVER AL LOBBY</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+</div>
