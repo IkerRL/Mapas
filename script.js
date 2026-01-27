@@ -30,7 +30,7 @@ function init() {
         const item = document.createElement('div');
         item.className = 'item';
         
-        // TU IDEA: Guardamos la imagen directamente en la caja (el elemento HTML)
+        // Guardamos la imagen en el elemento para leerla luego
         item.setAttribute('data-img', randomSkin);
         
         item.innerHTML = `<img src="${randomSkin}">`;
@@ -43,32 +43,37 @@ playBtn.addEventListener('click', () => {
     roulette.style.display = 'block';
 
     setTimeout(() => {
-        // Apuntamos a la caja 80 como objetivo base
+        // Apuntamos a la caja 80 como objetivo
         const winningIdx = 80; 
         const centerOffset = roulette.offsetWidth / 2;
         const landingPos = (winningIdx * itemWidth) - centerOffset + (itemWidth / 2);
         
-        // Variación aleatoria para que no caiga siempre igual
-        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.7)) - (itemWidth * 0.35);
+        // Extra aleatorio (mantenemos un margen para que no baile demasiado)
+        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.8)) - (itemWidth * 0.4);
 
         itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
         itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
 
         itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
-                // CALCULAMOS CUÁL ES LA CAJA FÍSICA EN EL CENTRO
+                // LÓGICA DE MAYORÍA DE PORCENTAJE
                 const style = window.getComputedStyle(itemsContainer);
                 const matrix = new WebKitCSSMatrix(style.transform);
-                const finalLeft = Math.abs(matrix.m41);
+                const currentTranslateX = Math.abs(matrix.m41);
                 
-                // Buscamos el índice de la caja basándonos en la posición final real
-                const realIdx = Math.round((finalLeft + centerOffset - (itemWidth / 2)) / itemWidth);
+                // Calculamos el punto exacto donde cae la línea roja en la tira de imágenes
+                const pointOfSelection = currentTranslateX + centerOffset;
+                
+                // Math.floor nos da la caja que tiene la mayor parte de su cuerpo bajo la línea
+                const realIdx = Math.floor(pointOfSelection / itemWidth);
+                
                 const allItems = document.querySelectorAll('.item');
+                const safeIdx = Math.max(0, Math.min(realIdx, allItems.length - 1));
                 
-                // Sacamos la imagen de esa caja específica (la que está bajo el selector)
-                const finalMap = allItems[realIdx].getAttribute('data-img');
+                // Leemos la imagen de la caja ganadora
+                const finalMap = allItems[safeIdx].getAttribute('data-img');
 
-                // Escondemos ruleta y mostramos el mapa ganador
+                // Ocultar ruleta y mostrar premio
                 roulette.style.display = 'none';
                 winnerImg.src = finalMap; 
                 rewardDisplay.style.display = 'flex';
