@@ -43,15 +43,17 @@ playBtn.addEventListener('click', () => {
     roulette.style.display = 'block';
 
     setTimeout(() => {
-        const winningIdx = 80; // Índice fijo para asegurar que haya suficientes items después
+        const winningIdx = 80; 
         const landingPos = (winningIdx * itemWidth) - (roulette.offsetWidth / 2) + (itemWidth / 2);
-        const randomExtra = Math.floor(Math.random() * 100) - 50; // Variación para que no caiga siempre igual
+        const randomExtra = Math.floor(Math.random() * 80) - 40;
 
         itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
         itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
 
         itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
+                // AQUÍ EL CAMBIO: Limpiamos la pantalla antes de mostrar el premio
+                roulette.style.display = 'none'; 
                 winnerImg.src = itemsOrder[winningIdx];
                 rewardDisplay.style.display = 'flex';
             }, 500);
@@ -68,5 +70,4 @@ function resetGame() {
     init();
 }
 
-// Ejecutar al cargar
 window.onload = init;
