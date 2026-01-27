@@ -50,12 +50,13 @@ playBtn.addEventListener('click', () => {
         itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
         itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
 
-itemsContainer.addEventListener('transitionend', () => {
+        itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
-                // ELIMINA O COMENTA ESTA LÍNEA -> roulette.style.display = 'none'; 
+                // AQUÍ ESTABA EL FALLO: Ahora la línea está activa (sin las barras //)
+                roulette.style.display = 'none'; 
                 
                 winnerImg.src = itemsOrder[winningIdx];
-                rewardDisplay.style.display = 'flex'; // Esto muestra el premio encima
+                rewardDisplay.style.display = 'flex'; 
             }, 500);
         }, { once: true });
     }, 100);
