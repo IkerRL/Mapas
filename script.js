@@ -62,6 +62,42 @@ playBtn.addEventListener('click', () => {
     }, 100);
 });
 
+playBtn.addEventListener('click', () => {
+    lobby.style.display = 'none';
+    roulette.style.display = 'block';
+
+    setTimeout(() => {
+        // 1. Elegimos un destino lejano (entre la caja 70 y 90)
+        const winningIdx = Math.floor(Math.random() * 20) + 70; 
+        
+        // 2. Calculamos la posición para que esa caja quede centrada
+        const centerOffset = roulette.offsetWidth / 2;
+        const landingPos = (winningIdx * itemWidth) - centerOffset + (itemWidth / 2);
+        
+        // 3. Añadimos un extra aleatorio limitado (máximo 40% del ancho de la caja)
+        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.8)) - (itemWidth * 0.4);
+
+        itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
+        itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
+
+        itemsContainer.addEventListener('transitionend', () => {
+            setTimeout(() => {
+                // CALCULAMOS QUÉ CAJA ESTÁ REALMENTE BAJO EL SELECTOR
+                const style = window.getComputedStyle(itemsContainer);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                const finalTransform = Math.abs(matrix.m41);
+                
+                // Esta es la cuenta matemática que no falla:
+                const realWinnerIdx = Math.round((finalTransform + centerOffset - (itemWidth / 2)) / itemWidth);
+                
+                roulette.style.display = 'none';
+                winnerImg.src = itemsOrder[realWinnerIdx]; 
+                rewardDisplay.style.display = 'flex';
+            }, 500);
+        }, { once: true });
+    }, 100);
+});
+
 function resetGame() {
     rewardDisplay.style.display = 'none';
     roulette.style.display = 'none';
