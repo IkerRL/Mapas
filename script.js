@@ -23,18 +23,18 @@ const skins = [
     'https://static.wikia.nocookie.net/valorant/images/6/6f/Loading_Screen_Corrode.png'
 ];
 
-let itemsOrder = [];
-
 function init() {
     itemsContainer.innerHTML = '';
-    itemsOrder = [];
     for (let i = 0; i < totalSpinItems; i++) {
         const randomSkin = skins[Math.floor(Math.random() * skins.length)];
         const item = document.createElement('div');
         item.className = 'item';
+        
+        // TU IDEA: Guardamos la imagen directamente en la caja (el elemento HTML)
+        item.setAttribute('data-img', randomSkin);
+        
         item.innerHTML = `<img src="${randomSkin}">`;
         itemsContainer.appendChild(item);
-        itemsOrder.push(randomSkin);
     }
 }
 
@@ -43,30 +43,34 @@ playBtn.addEventListener('click', () => {
     roulette.style.display = 'block';
 
     setTimeout(() => {
-        // Elegimos un índice objetivo (caja 80)
+        // Apuntamos a la caja 80 como objetivo base
         const winningIdx = 80; 
         const centerOffset = roulette.offsetWidth / 2;
         const landingPos = (winningIdx * itemWidth) - centerOffset + (itemWidth / 2);
         
-        // Extra aleatorio para que no caiga siempre igual
-        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.6)) - (itemWidth * 0.3);
+        // Variación aleatoria para que no caiga siempre igual
+        const randomExtra = Math.floor(Math.random() * (itemWidth * 0.7)) - (itemWidth * 0.35);
 
         itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
         itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
 
         itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
-                // LEEMOS LA POSICIÓN REAL FINAL
+                // CALCULAMOS CUÁL ES LA CAJA FÍSICA EN EL CENTRO
                 const style = window.getComputedStyle(itemsContainer);
                 const matrix = new WebKitCSSMatrix(style.transform);
-                const finalTransform = Math.abs(matrix.m41);
+                const finalLeft = Math.abs(matrix.m41);
                 
-                // Calculamos qué caja está realmente en el centro
-                const realWinnerIdx = Math.round((finalTransform + centerOffset - (itemWidth / 2)) / itemWidth);
+                // Buscamos el índice de la caja basándonos en la posición final real
+                const realIdx = Math.round((finalLeft + centerOffset - (itemWidth / 2)) / itemWidth);
+                const allItems = document.querySelectorAll('.item');
                 
-                // Escondemos ruleta y mostramos premio exacto
+                // Sacamos la imagen de esa caja específica (la que está bajo el selector)
+                const finalMap = allItems[realIdx].getAttribute('data-img');
+
+                // Escondemos ruleta y mostramos el mapa ganador
                 roulette.style.display = 'none';
-                winnerImg.src = itemsOrder[realWinnerIdx]; 
+                winnerImg.src = finalMap; 
                 rewardDisplay.style.display = 'flex';
             }, 500);
         }, { once: true });
