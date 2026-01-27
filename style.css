@@ -55,10 +55,37 @@ body {
     position: relative;
     width: 100%;
     height: 160px;
-    background: #000000;
+    background: #0f1923;
     overflow: hidden;
     border-top: 2px solid #333;
     border-bottom: 2px solid #333;
+}
+
+/* ESTO CREA EL DIFUMINADO LATERAL */
+.roulette-viewport::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    /* Crea un degradado: Negro -> Transparente -> Negro */
+    background: linear-gradient(to right, 
+        rgba(0,0,0,1) 0%, 
+        rgba(0,0,0,0) 20%, 
+        rgba(0,0,0,0) 80%, 
+        rgba(0,0,0,1) 100%);
+    pointer-events: none; /* Para que no bloquee los clicks */
+    z-index: 5;
+}
+
+/* Ajustamos el selector para que esté por encima del difuminado */
+.selector {
+    position: absolute;
+    left: 50%;
+    width: 4px;
+    height: 100%;
+    background: var(--v-red);
+    z-index: 10; /* Mayor que el z-index del difuminado */
+    transform: translateX(-50%);
+    box-shadow: 0 0 20px var(--v-red);
 }
 
 .items-wrap {
