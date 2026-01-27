@@ -55,7 +55,7 @@ body {
     position: relative;
     width: 100%;
     height: 160px;
-    background: rgba(0, 0, 0, 0.85);
+    background: #000000;
     overflow: hidden;
     border-top: 2px solid #333;
     border-bottom: 2px solid #333;
@@ -103,24 +103,23 @@ body {
 /* AQUÍ EL CAMBIO: Fondo sólido y sin ruleta visible */
 .reward-overlay {
     position: fixed;
-    top: 0; left: 0; 
-    width: 100%; height: 100%;
-    background: transparent; /* Sin color de fondo */
-    display: none;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: transparent; /* 100% transparente */
+    display: none; /* Se activa con el JS */
     justify-content: center;
     align-items: center;
     z-index: 100;
-    pointer-events: none; /* Permite que se pueda clicar lo de atrás si fuera necesario */
 }
 
 .reward-content {
-    /* El recuadro del premio sí debe tener fondo para que se lea bien */
-    background: var(--v-panel); 
+    /* Si quieres que el cartel del mapa tenga un poco de fondo para que se lea: */
+    background: rgba(31, 35, 38, 0.9); 
+    /* Si quieres que el cartel también sea 100% transparente, pon: background: transparent; */
+    
     padding: 50px;
     border: 2px solid var(--v-red);
     clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-    box-shadow: 0 0 100px rgba(0,0,0,0.8); /* Sombra fuerte para que resalte */
-    pointer-events: auto; /* Para que el botón de volver al lobby sí funcione */
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
 }
 
 #winner-img {
