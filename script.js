@@ -40,7 +40,7 @@ function init() {
 
 playBtn.addEventListener('click', () => {
     lobby.style.display = 'none';
-    roulette.style.display = 'none';
+    roulette.style.display = 'block';
 
     setTimeout(() => {
         const winningIdx = 80; 
