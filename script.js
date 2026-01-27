@@ -50,10 +50,9 @@ playBtn.addEventListener('click', () => {
         itemsContainer.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
         itemsContainer.style.transform = `translateX(-${landingPos + randomExtra}px)`;
 
-        itemsContainer.addEventListener('transitionend', () => {
+itemsContainer.addEventListener('transitionend', () => {
             setTimeout(() => {
-                // AQUÍ EL CAMBIO: Limpiamos la pantalla antes de mostrar el premio
-                roulette.style.display = 'none'; 
+                // roulette.style.display = 'none';  <-- BORRA O COMENTA ESTA LÍNEA
                 winnerImg.src = itemsOrder[winningIdx];
                 rewardDisplay.style.display = 'flex';
             }, 500);
