@@ -91,15 +91,19 @@ body {
 .items-wrap {
     display: flex;
     position: absolute;
+    left: 0; /* Punto de referencia inicial */
+    top: 0;
     height: 100%;
 }
 
 .item {
-    min-width: 160px;
+    min-width: 160px; /* Exactamente igual que el itemWidth del JS */
+    width: 160px;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box; /* Evita que el borde ensanche la caja */
     border-right: 1px solid #222;
 }
 
