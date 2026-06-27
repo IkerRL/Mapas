@@ -7,13 +7,27 @@
     --v-red: #4CAF50;
     --v-red-hover: #66BB6A;
     --v-dark: #081C15;
-    --v-panel: rgba(42, 54, 43, 0.85);
-    --v-panel-border: rgba(46, 125, 50, 0.35);
-    --v-cyan: #FFB300;
+    --v-panel: rgba(26, 17, 12, 0.95);
+    --v-panel-border: #795548;
+    --v-cyan: #ffa000;
     --v-gray: #B0BEC5;
-    --v-white: #ece8e1;
+    --v-white: #ece5db;
     --font-titles: 'BertholdBlock', sans-serif;
     --font-body: 'Inter', sans-serif;
+
+    /* TEMA TRIBAL MAKAKO (style2.css) */
+    --team-left-color: #2e7d32;
+    --team-right-color: #ffa000;
+    --accent-red: #ffa000;
+    --accent-red-hover: #ffb300;
+    --wood-color-light: #4e2e1a;
+    --wood-color-dark: #27140b;
+    --wood-border: #795548;
+    --stone-color: #212529;
+    --stone-border: #3c4043;
+    --panel-bg: rgba(26, 17, 12, 0.99);
+    --text-primary: #ece5db;
+    --skew-angle: -10deg;
 }
 
 * {
@@ -136,13 +150,12 @@ body {
 
 .lobby-content {
     width: 100%;
-    background: var(--v-panel);
-    border: 1px solid var(--v-panel-border);
+    background: var(--panel-bg);
+    border: 3px solid var(--wood-border);
     padding: 30px;
     position: relative;
     border-radius: 16px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
 }
 
 .lobby-content::after {
@@ -226,12 +239,13 @@ body {
 .map-card {
     position: relative;
     aspect-ratio: 16/10;
-    background: var(--v-dark);
-    border: 1px solid rgba(46, 125, 50, 0.2);
-    border-radius: 8px;
+    background: linear-gradient(180deg, #2c302e 0%, #161817 100%);
+    border: 3px solid var(--stone-border);
+    border-radius: 4px;
     cursor: pointer;
     overflow: hidden;
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 3px 6px rgba(0,0,0,0.45);
 }
 
 .map-card-img {
@@ -338,26 +352,34 @@ body {
 
 .v-btn-play {
     font-family: var(--font-titles);
-    background: var(--v-cyan);
-    color: var(--v-dark);
-    border: none;
-    border-radius: 12px;
+    background: linear-gradient(135deg, var(--wood-color-light) 0%, var(--wood-color-dark) 100%);
+    border: 2px solid var(--wood-border);
+    border-bottom: 4px solid var(--accent-red);
+    color: var(--text-primary);
     padding: 16px 90px;
     font-size: 28px;
-    font-style: italic;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     font-weight: 700;
     letter-spacing: 2px;
     position: relative;
-    box-shadow: 0 8px 25px rgba(255, 179, 0, 0.3);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.65), inset 0 2px 4px rgba(255, 255, 255, 0.08);
+    transform: skew(var(--skew-angle));
     outline: none;
 }
 
+.v-btn-play::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.06), transparent);
+    pointer-events: none;
+}
+
 .v-btn-play:hover {
-    background: #FFC107;
-    transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(255, 179, 0, 0.5);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+    transform: skew(var(--skew-angle)) translateY(-1px);
+    border-bottom-color: var(--accent-red-hover);
 }
 
 .v-btn-play:active {
@@ -658,4 +680,222 @@ body {
     .v-btn-play { padding: 14px 60px; font-size: 22px; }
     .reward-content { padding: 30px 40px; }
     .reward-title { font-size: 36px; }
+}
+
+/* ==========================================================================
+   CONSOLA DE CONTROL DEL ADMINISTRADOR (UNIFIED CONSOLE)
+   ========================================================================== */
+.admin-trigger-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(43, 24, 13, 0.95);
+    border: 1.5px solid var(--accent-red);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.4rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1100;
+}
+.admin-trigger-btn:hover {
+    transform: scale(1.1) rotate(45deg);
+    box-shadow: 0 0 15px var(--accent-red-hover);
+    border-color: white;
+}
+
+.admin-console {
+    position: fixed;
+    bottom: 85px;
+    left: 20px;
+    width: 450px;
+    max-height: calc(100vh - 120px);
+    background: var(--panel-bg);
+    border: 3px solid var(--wood-border);
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    z-index: 1050;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+.admin-console.active {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.admin-header {
+    background: rgba(255, 255, 255, 0.01);
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.admin-title {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: white;
+}
+.admin-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    outline: none;
+}
+.admin-close:hover {
+    color: var(--accent-red);
+}
+
+.admin-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.admin-section {
+    margin-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding-bottom: 18px;
+}
+.admin-section:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.admin-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.admin-input-group label {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1.5px;
+    font-weight: 700;
+}
+.admin-input-group input, .admin-input-group select {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s;
+}
+.admin-input-group input:focus, .admin-input-group select:focus {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 10px var(--accent-red-hover);
+}
+.admin-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.admin-col {
+    flex: 1;
+}
+
+.admin-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    outline: none;
+}
+.admin-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+.admin-btn.btn-primary {
+    background: var(--accent-red);
+    border-color: var(--accent-red);
+    color: black;
+    font-weight: 900;
+}
+.admin-btn.btn-primary:hover {
+    background: var(--accent-red-hover);
+    box-shadow: 0 0 10px var(--accent-red-hover);
+}
+
+/* Red sync */
+.pulse-icon {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+.pulse-icon::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    animation: status-pulse 1.5s infinite;
+    opacity: 0.4;
+}
+.pulse-icon.red { background: #ff4655; }
+.pulse-icon.red::after { border: 3px solid #ff4655; }
+.pulse-icon.yellow { background: #ffd700; }
+.pulse-icon.yellow::after { border: 3px solid #ffd700; }
+.pulse-icon.green { background: #00ff88; }
+.pulse-icon.green::after { border: 3px solid #00ff88; }
+
+@keyframes status-pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+.status-badge.status-disconnected {
+    background: rgba(255, 70, 85, 0.15);
+    color: #ff4655;
+    border: 1px solid #ff4655;
+}
+.status-badge.status-connecting {
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700;
+    border: 1px solid #ffd700;
+}
+.status-badge.status-connected {
+    background: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+    border: 1px solid #00ff88;
 }

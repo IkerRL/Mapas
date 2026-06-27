@@ -100,6 +100,13 @@ const itemWidth = 180; // Debe coincidir con el min-width del CSS de .item
 let isSpinning = false;
 let lastCenteredIndex = -1;
 
+// MULTIJUGADOR MQTT
+let mqttClient = null;
+let mqttTopic = '';
+let isApplyingSyncState = false;
+const MSG_HISTORIAL = new Set();
+let isHost = true;
+
 // Inicializa el AudioContext para los sonidos de tick
 function initAudio() {
     if (!audioCtx) {
@@ -182,9 +189,11 @@ function renderMapPool() {
         `;
 
         card.addEventListener('click', () => {
+            if (isApplyingSyncState) return;
             map.active = !map.active;
             card.classList.toggle('active', map.active);
             updateLobbyState();
+            broadcastState();
         });
 
         mapPoolContainer.appendChild(card);
@@ -234,6 +243,7 @@ function checkTick() {
 
 // EVENTO DE INICIO DEL GIRO
 playBtn.addEventListener('click', () => {
+    if (isApplyingSyncState) return;
     const activeMaps = mapPool.filter(m => m.active);
     if (activeMaps.length < 2) return;
 
@@ -241,15 +251,24 @@ playBtn.addEventListener('click', () => {
 
     const totalActive = activeMaps.length;
     const chosenIdx = Math.floor(Math.random() * totalActive);
+
+    const targetItemsCount = 150;
+    const reps = Math.ceil(targetItemsCount / totalActive);
+
+    publishMQTT({ type: 'SPIN', chosenIdx, reps });
+    aplicarSpin(chosenIdx, reps);
+});
+
+function aplicarSpin(chosenIdx, reps) {
+    const activeMaps = mapPool.filter(m => m.active);
+    if (activeMaps.length < 2) return;
+
+    const totalActive = activeMaps.length;
     const winnerMap = activeMaps[chosenIdx];
 
     // Ocultar Lobby y mostrar contenedor de la ruleta
     lobby.style.display = 'none';
     roulette.style.display = 'block';
-
-    // Para un giro largo y vistoso, repetimos los mapas activos hasta alcanzar ~150 elementos
-    const targetItemsCount = 150;
-    const reps = Math.ceil(targetItemsCount / totalActive);
 
     itemsContainer.innerHTML = '';
 
@@ -277,17 +296,13 @@ playBtn.addEventListener('click', () => {
         const viewportWidth = roulette.offsetWidth;
         const centerOffset = viewportWidth / 2;
 
-        // Hacemos que se detenga en la penúltima tanda para mayor vistosidad
         const targetRepetition = reps - 2;
         const absoluteWinningIdx = (targetRepetition * totalActive) + chosenIdx;
 
-        // Posición base para centrar la tarjeta ganadora
         const landingPos = (absoluteWinningIdx * itemWidth) - centerOffset + (itemWidth / 2);
 
-        // Añadir una desviación aleatoria para que no quede exactamente en el centro (más realista)
-        const safeMargin = itemWidth * 0.25; // +/- 45px
-        const randomExtra = Math.floor(Math.random() * (safeMargin * 2)) - safeMargin;
-        const finalLandingPos = landingPos + randomExtra;
+        // Sin desviación para garantizar sincronización visual en todas las pantallas
+        const finalLandingPos = landingPos;
 
         // Activar control de sonido por animación
         isSpinning = true;
@@ -317,10 +332,10 @@ playBtn.addEventListener('click', () => {
             }, 600);
         }, { once: true });
     }, 50);
-});
+}
 
 // Reiniciar juego al Lobby
-function resetGame() {
+function resetGame(fromSync = false) {
     rewardDisplay.style.display = 'none';
     roulette.style.display = 'none';
     lobby.style.display = 'block';
@@ -328,22 +343,31 @@ function resetGame() {
     itemsContainer.style.transition = 'none';
     itemsContainer.style.transform = 'translateX(0)';
     void itemsContainer.offsetWidth;
+
+    if (!fromSync && !isApplyingSyncState) {
+        publishMQTT({ type: 'RESET' });
+    }
 }
 
 // CONTROLES DE ACTIVACIÓN DEL POOL COMPLETO
 document.getElementById('selectAllBtn').addEventListener('click', () => {
+    if (isApplyingSyncState) return;
     mapPool.forEach(m => m.active = true);
     document.querySelectorAll('.map-card').forEach(c => c.classList.add('active'));
     updateLobbyState();
+    broadcastState();
 });
 
 document.getElementById('deselectAllBtn').addEventListener('click', () => {
+    if (isApplyingSyncState) return;
     mapPool.forEach(m => m.active = false);
     document.querySelectorAll('.map-card').forEach(c => c.classList.remove('active'));
     updateLobbyState();
+    broadcastState();
 });
 
 document.getElementById('currentRotationBtn').addEventListener('click', () => {
+    if (isApplyingSyncState) return;
     const rotacionActual = ['Ascent', 'Breeze', 'Haven', 'Lotus', 'Summit', 'Sunset', 'Split'];
     mapPool.forEach((m, index) => {
         m.active = rotacionActual.includes(m.name);
@@ -353,11 +377,177 @@ document.getElementById('currentRotationBtn').addEventListener('click', () => {
         }
     });
     updateLobbyState();
+    broadcastState();
 });
+
+// ==========================================================================
+// SINCRONIZACIÓN EN VIVO (MQTT VIA HIVEMQ)
+// ==========================================================================
+function updateConnectionStatus(status, roomName = '') {
+    const statusText = document.getElementById('sync-status');
+    const consoleText = document.getElementById('consoleSyncStatusText');
+    const consolePulse = document.getElementById('consoleSyncStatusPulse');
+
+    if (status === 'connecting') {
+        if (statusText) { statusText.innerText = 'CONECTANDO...'; statusText.style.color = 'var(--v-cyan)'; }
+        if (consoleText) { consoleText.innerText = 'CONECTANDO...'; consoleText.className = 'status-badge status-connecting'; }
+        if (consolePulse) { consolePulse.className = 'pulse-icon yellow'; }
+    } else if (status === 'connected') {
+        if (statusText) { statusText.innerText = `SALA: ${roomName}`; statusText.style.color = '#4CAF50'; }
+        if (consoleText) { consoleText.innerText = `CONECTADO: ${roomName}`; consoleText.className = 'status-badge status-connected'; }
+        if (consolePulse) { consolePulse.className = 'pulse-icon green'; }
+    } else {
+        if (statusText) { statusText.innerText = 'DESCONECTADO'; statusText.style.color = 'var(--v-gray)'; }
+        if (consoleText) { consoleText.innerText = 'DESCONECTADO'; consoleText.className = 'status-badge status-disconnected'; }
+        if (consolePulse) { consolePulse.className = 'pulse-icon red'; }
+    }
+}
+
+function connectMQTT(roomName) {
+    if (mqttClient) {
+        mqttClient.end(true);
+        mqttClient = null;
+    }
+
+    const broker = 'wss://broker.hivemq.com:8884/mqtt';
+    const topicBase = 'val_roulette_sync';
+    mqttTopic = `${topicBase}/${roomName.trim()}`;
+
+    updateConnectionStatus('connecting');
+
+    if (typeof mqtt === 'undefined') {
+        console.error('MQTT.js no está cargado.');
+        return;
+    }
+
+    mqttClient = mqtt.connect(broker, {
+        clientId: 'roulette_' + Math.random().toString(16).slice(2, 10),
+        clean: true,
+        reconnectPeriod: 3000,
+    });
+
+    mqttClient.on('connect', () => {
+        updateConnectionStatus('connected', roomName);
+        mqttClient.subscribe(mqttTopic, { qos: 0 });
+        publishMQTT({ type: 'REQUEST_STATE' });
+    });
+
+    mqttClient.on('message', (topic, payload) => {
+        try {
+            const msg = JSON.parse(payload.toString());
+            if (msg._id && MSG_HISTORIAL.has(msg._id)) return;
+            MSG_HISTORIAL.add(msg._id);
+
+            if (msg.type === 'REQUEST_STATE') {
+                if (isHost) broadcastState();
+            } else if (msg.type === 'STATE_UPDATE') {
+                isApplyingSyncState = true;
+                aplicarEstado(msg.state);
+                isApplyingSyncState = false;
+            } else if (msg.type === 'SPIN') {
+                isApplyingSyncState = true;
+                aplicarSpin(msg.chosenIdx, msg.reps);
+                isApplyingSyncState = false;
+            } else if (msg.type === 'RESET') {
+                isApplyingSyncState = true;
+                resetGame(true);
+                isApplyingSyncState = false;
+            }
+        } catch (e) {
+            console.error('Error procesando MQTT', e);
+        }
+    });
+}
+
+function publishMQTT(msg) {
+    if (!mqttClient || !mqttClient.connected) return;
+    const id = Math.random().toString(36).slice(2, 10);
+    msg._id = id;
+    MSG_HISTORIAL.add(id);
+    if (MSG_HISTORIAL.size > 200) {
+        const first = MSG_HISTORIAL.values().next().value;
+        MSG_HISTORIAL.delete(first);
+    }
+    mqttClient.publish(mqttTopic, JSON.stringify(msg), { qos: 0, retain: false });
+}
+
+function broadcastState() {
+    if (isApplyingSyncState) return;
+    if (!mqttClient || !mqttClient.connected) return;
+    
+    const mapActiveState = mapPool.map(m => m.active);
+    publishMQTT({ type: 'STATE_UPDATE', state: { mapActiveState } });
+}
+
+function aplicarEstado(state) {
+    if (state.mapActiveState) {
+        state.mapActiveState.forEach((isActive, index) => {
+            if(mapPool[index]) mapPool[index].active = isActive;
+        });
+        
+        document.querySelectorAll('.map-card').forEach((c, index) => {
+            if (mapPool[index]) {
+                c.classList.toggle('active', mapPool[index].active);
+            }
+        });
+        updateLobbyState();
+    }
+}
+
+// Funciones de UI de la Consola Admin
+function toggleAdminConsole(show) {
+    const consoleEl = document.getElementById('admin-console');
+    if (!consoleEl) return;
+    
+    if (show === undefined) {
+        consoleEl.classList.toggle('active');
+    } else if (show) {
+        consoleEl.classList.add('active');
+    } else {
+        consoleEl.classList.remove('active');
+    }
+}
 
 // Carga Inicial
 window.onload = () => {
     renderMapPool();
     updateLobbyState();
     muteBtn.addEventListener('click', toggleMute);
+    
+    // Abrir consola desde el icono de Valorant original
+    const syncTrigger = document.getElementById('sync-trigger');
+    if (syncTrigger) {
+        syncTrigger.addEventListener('click', () => toggleAdminConsole(true));
+    }
+    
+    // Abrir consola desde el nuevo botón inferior
+    const syncTriggerBtn = document.getElementById('sync-trigger-btn');
+    if (syncTriggerBtn) {
+        syncTriggerBtn.addEventListener('click', () => toggleAdminConsole(true));
+    }
+    
+    // Cerrar consola
+    const adminCloseBtn = document.getElementById('admin-close-btn');
+    if (adminCloseBtn) {
+        adminCloseBtn.addEventListener('click', () => toggleAdminConsole(false));
+    }
+    
+    // Botón de Conectar en la consola
+    const consoleBtnConnect = document.getElementById('consoleBtnConnect');
+    if (consoleBtnConnect) {
+        consoleBtnConnect.addEventListener('click', () => {
+            const roomInput = document.getElementById('consoleSyncRoom');
+            const hostSelect = document.getElementById('consoleHostToggle');
+            
+            const room = roomInput ? roomInput.value.trim() : '';
+            if (!room) {
+                alert('Introduce un nombre de sala válido.');
+                return;
+            }
+            
+            isHost = (hostSelect && hostSelect.value === 'true');
+            connectMQTT(room);
+            toggleAdminConsole(false);
+        });
+    }
 };

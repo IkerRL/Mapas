@@ -6,6 +6,7 @@
     <title>Valorant Roulette // Sorteador de Mapas</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 </head>
 <body>
 
@@ -23,7 +24,7 @@
     <!-- Lobby principal -->
     <div id="lobby" class="panel-fade-in">
         <div class="logo-container">
-            <div class="valorant-icon-svg">
+            <div class="valorant-icon-svg" id="sync-trigger" style="cursor: pointer;" title="Conectar a Sala">
                 <svg viewBox="0 0 100 100" width="48" height="48" fill="#ff4655">
                     <path d="M47.7 10L10 47.7v4.6h37.7v37.7h4.6L90 52.3v-4.6H52.3V10h-4.6z"/>
                 </svg>
@@ -81,6 +82,41 @@
             </div>
             
             <button onclick="resetGame()" class="v-btn-play btn-small glow-effect">VOLVER AL LOBBY</button>
+        </div>
+    </div>
+
+    <!-- Admin / Sync HUD -->
+    <button class="admin-trigger-btn" id="sync-trigger-btn" title="Opciones de Red">⚙️</button>
+    <div class="admin-console" id="admin-console">
+        <div class="admin-header">
+            <div class="admin-title">CONFIGURACIÓN DE SALA</div>
+            <button class="admin-close" id="admin-close-btn">✖</button>
+        </div>
+        <div class="admin-body">
+            <div class="admin-section">
+                <div class="admin-input-group">
+                    <label>NOMBRE DE SALA</label>
+                    <input type="text" id="consoleSyncRoom" placeholder="Ej: TORNEO123" />
+                </div>
+                <div class="admin-input-group">
+                    <label>¿ERES EL HOST? (CONTROLA LA RULETA)</label>
+                    <select id="consoleHostToggle">
+                        <option value="true">Sí (Transmito)</option>
+                        <option value="false">No (Solo recibo)</option>
+                    </select>
+                </div>
+                <div class="admin-row">
+                    <div class="admin-col">
+                        <button class="admin-btn btn-primary" id="consoleBtnConnect">CONECTAR</button>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="consoleSyncStatusPulse" class="pulse-icon red"></span>
+                        <span id="consoleSyncStatusText" class="status-badge status-disconnected">DESCONECTADO</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
