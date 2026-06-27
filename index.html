@@ -3,17 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valorant Roulette</title>
+    <title>Valorant Roulette // Sorteador de Mapas</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="lobby">
-        <button id="playBtn" class="v-btn-play">START</button>
+    <!-- Controles superiores -->
+    <div class="top-bar">
+        <div class="brand">VALORANT // SELECTOR DE MAPA</div>
+        <button id="muteBtn" class="mute-btn" aria-label="Silenciar">
+            <svg id="sound-icon" viewBox="0 0 24 24" width="24" height="24">
+                <!-- Icono de altavoz encendido por defecto -->
+                <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+            </svg>
+        </button>
     </div>
 
-    <div id="roulette-container" class="csgo-overlay" style="display: none;">
+    <!-- Lobby principal -->
+    <div id="lobby" class="panel-fade-in">
+        <div class="logo-container">
+            <div class="valorant-icon-svg">
+                <svg viewBox="0 0 100 100" width="48" height="48" fill="#ff4655">
+                    <path d="M47.7 10L10 47.7v4.6h37.7v37.7h4.6L90 52.3v-4.6H52.3V10h-4.6z"/>
+                </svg>
+            </div>
+            <h1 class="main-title">VALORANT <span>ROULETTE</span></h1>
+            <p class="subtitle">SORTEADOR DE MAPAS TÁCTICO</p>
+        </div>
+
+        <div class="lobby-content">
+            <div class="map-pool-section">
+                <h3 class="section-title">POOL DE MAPAS</h3>
+                <div class="map-pool-controls">
+                    <button type="button" class="btn-text-only" id="selectAllBtn">SELECCIONAR TODOS</button>
+                    <span class="divider">/</span>
+                    <button type="button" class="btn-text-only" id="currentRotationBtn">ROTACIÓN ACTUAL</button>
+                    <span class="divider">/</span>
+                    <button type="button" class="btn-text-only" id="deselectAllBtn">DESACTIVAR TODOS</button>
+                </div>
+                <div id="map-pool" class="map-pool-grid">
+                    <!-- Generado dinámicamente -->
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button id="playBtn" class="v-btn-play glow-effect">START</button>
+                <p id="lobby-status" class="lobby-status-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de la ruleta -->
+    <div id="roulette-container" class="csgo-overlay panel-fade-in" style="display: none;">
+        <h2 class="roulette-header-title">SELECCIONANDO MAPA DE JUEGO</h2>
         <div class="roulette-viewport">
             <div class="selector"></div>
             <div class="items-wrap" id="items"></div>
@@ -21,13 +64,23 @@
         <p id="status" class="status-text">BUSCANDO PARTIDA...</p>
     </div>
 
+    <!-- Pantalla de ganador (Reward Display) -->
     <div id="reward-display" class="reward-overlay" style="display: none;">
         <div class="reward-content">
-            <h2 class="reward-title">PARTIDA ENCONTRADA</h2>
+            <div class="reward-badge">PARTIDA ENCONTRADA</div>
+            <h2 id="winner-name" class="reward-title">ASCENT</h2>
+            <p id="winner-location" class="reward-subtitle">VENECIA, ITALIA</p>
+            
             <div class="reward-image-container">
-                <img id="winner-img" src="" alt="Winner">
+                <img id="winner-img" src="" alt="Ganador">
+                <div class="image-glow"></div>
+                <div class="image-corner top-left"></div>
+                <div class="image-corner top-right"></div>
+                <div class="image-corner bottom-left"></div>
+                <div class="image-corner bottom-right"></div>
             </div>
-            <button onclick="resetGame()" class="v-btn-play btn-small">VOLVER AL LOBBY</button>
+            
+            <button onclick="resetGame()" class="v-btn-play btn-small glow-effect">VOLVER AL LOBBY</button>
         </div>
     </div>
 
