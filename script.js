@@ -189,6 +189,7 @@ function renderMapPool() {
         `;
 
         card.addEventListener('click', () => {
+            if (window.isPantalla) return;
             if (isApplyingSyncState) return;
             map.active = !map.active;
             card.classList.toggle('active', map.active);
@@ -243,6 +244,7 @@ function checkTick() {
 
 // EVENTO DE INICIO DEL GIRO
 playBtn.addEventListener('click', () => {
+    if (window.isPantalla) return;
     if (isApplyingSyncState) return;
     const activeMaps = mapPool.filter(m => m.active);
     if (activeMaps.length < 2) return;
@@ -351,6 +353,7 @@ function resetGame(fromSync = false) {
 
 // CONTROLES DE ACTIVACIÓN DEL POOL COMPLETO
 document.getElementById('selectAllBtn').addEventListener('click', () => {
+    if (window.isPantalla) return;
     if (isApplyingSyncState) return;
     mapPool.forEach(m => m.active = true);
     document.querySelectorAll('.map-card').forEach(c => c.classList.add('active'));
@@ -359,6 +362,7 @@ document.getElementById('selectAllBtn').addEventListener('click', () => {
 });
 
 document.getElementById('deselectAllBtn').addEventListener('click', () => {
+    if (window.isPantalla) return;
     if (isApplyingSyncState) return;
     mapPool.forEach(m => m.active = false);
     document.querySelectorAll('.map-card').forEach(c => c.classList.remove('active'));
@@ -367,6 +371,7 @@ document.getElementById('deselectAllBtn').addEventListener('click', () => {
 });
 
 document.getElementById('currentRotationBtn').addEventListener('click', () => {
+    if (window.isPantalla) return;
     if (isApplyingSyncState) return;
     const rotacionActual = ['Ascent', 'Breeze', 'Haven', 'Lotus', 'Summit', 'Sunset', 'Split'];
     mapPool.forEach((m, index) => {
@@ -387,20 +392,92 @@ function updateConnectionStatus(status, roomName = '') {
     const statusText = document.getElementById('sync-status');
     const consoleText = document.getElementById('consoleSyncStatusText');
     const consolePulse = document.getElementById('consoleSyncStatusPulse');
+    const disconnectedControls = document.getElementById('sync-disconnected-controls');
+    const connectedControls = document.getElementById('sync-connected-controls');
 
     if (status === 'connecting') {
         if (statusText) { statusText.innerText = 'CONECTANDO...'; statusText.style.color = 'var(--v-cyan)'; }
         if (consoleText) { consoleText.innerText = 'CONECTANDO...'; consoleText.className = 'status-badge status-connecting'; }
         if (consolePulse) { consolePulse.className = 'pulse-icon yellow'; }
+        if (disconnectedControls) disconnectedControls.style.display = 'block';
+        if (connectedControls) connectedControls.style.display = 'none';
     } else if (status === 'connected') {
         if (statusText) { statusText.innerText = `SALA: ${roomName}`; statusText.style.color = '#4CAF50'; }
         if (consoleText) { consoleText.innerText = `CONECTADO: ${roomName}`; consoleText.className = 'status-badge status-connected'; }
         if (consolePulse) { consolePulse.className = 'pulse-icon green'; }
+        if (disconnectedControls) disconnectedControls.style.display = 'none';
+        if (connectedControls) connectedControls.style.display = 'flex';
     } else {
         if (statusText) { statusText.innerText = 'DESCONECTADO'; statusText.style.color = 'var(--v-gray)'; }
         if (consoleText) { consoleText.innerText = 'DESCONECTADO'; consoleText.className = 'status-badge status-disconnected'; }
         if (consolePulse) { consolePulse.className = 'pulse-icon red'; }
+        if (disconnectedControls) disconnectedControls.style.display = 'block';
+        if (connectedControls) connectedControls.style.display = 'none';
     }
+}
+
+function initializeMQTTSync() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('room');
+    const isObs = urlParams.get('pantalla') === 'true';
+    const isAdmin = urlParams.get('admin') === 'true';
+
+    if (roomParam) {
+        window.roomName = roomParam;
+
+        // Si tiene sala por URL pero no tiene &admin=true, por defecto actúa como Pantalla
+        if (!isAdmin) {
+            window.isPantalla = true;
+            document.body.classList.add('pantalla-mode');
+            isHost = false;
+
+            // Si es el modo de pantalla limpia de OBS, añadimos obs-mode para desactivar interacciones
+            if (isObs) {
+                document.body.classList.add('obs-mode');
+            }
+        }
+
+        const roomInput = document.getElementById('consoleSyncRoom');
+        if (roomInput) roomInput.value = roomParam;
+
+        setTimeout(() => connectMQTT(roomParam), 600);
+    } else {
+        // Generar código de sala aleatorio
+        const roomInput = document.getElementById('consoleSyncRoom');
+        if (roomInput) roomInput.value = generateRandomRoom();
+    }
+}
+
+function generateRandomRoom() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'RULETA-';
+    for (let i = 0; i < 5; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+function copyLinkFromConsole() {
+    const roomInput = document.getElementById('consoleSyncRoom');
+    const room = roomInput ? roomInput.value.trim() : '';
+    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room)}`;
+
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        const btn = document.getElementById('consoleBtnCopyLink');
+        if (btn) {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '✓ ¡COPIADO!';
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        }
+    }).catch(() => alert(`Copia este enlace: ${shareUrl}`));
+}
+
+function disconnectMQTTFromConsole() {
+    if (mqttClient) {
+        mqttClient.end(true);
+        mqttClient = null;
+    }
+    updateConnectionStatus('disconnected');
 }
 
 function connectMQTT(roomName) {
@@ -439,7 +516,7 @@ function connectMQTT(roomName) {
             MSG_HISTORIAL.add(msg._id);
 
             if (msg.type === 'REQUEST_STATE') {
-                if (isHost) broadcastState();
+                if (isHost && !window.isPantalla) broadcastState();
             } else if (msg.type === 'STATE_UPDATE') {
                 isApplyingSyncState = true;
                 aplicarEstado(msg.state);
@@ -456,6 +533,19 @@ function connectMQTT(roomName) {
         } catch (e) {
             console.error('Error procesando MQTT', e);
         }
+    });
+
+    mqttClient.on('reconnect', () => {
+        updateConnectionStatus('connecting');
+    });
+
+    mqttClient.on('error', (err) => {
+        console.error('Error MQTT:', err);
+        updateConnectionStatus('disconnected');
+    });
+
+    mqttClient.on('close', () => {
+        updateConnectionStatus('disconnected');
     });
 }
 
@@ -537,7 +627,6 @@ window.onload = () => {
     if (consoleBtnConnect) {
         consoleBtnConnect.addEventListener('click', () => {
             const roomInput = document.getElementById('consoleSyncRoom');
-            const hostSelect = document.getElementById('consoleHostToggle');
             
             const room = roomInput ? roomInput.value.trim() : '';
             if (!room) {
@@ -545,9 +634,11 @@ window.onload = () => {
                 return;
             }
             
-            isHost = (hostSelect && hostSelect.value === 'true');
             connectMQTT(room);
             toggleAdminConsole(false);
         });
     }
+
+    // Inicializar sincronización MQTT
+    initializeMQTTSync();
 };

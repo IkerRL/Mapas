@@ -98,17 +98,14 @@
                     <label>NOMBRE DE SALA</label>
                     <input type="text" id="consoleSyncRoom" placeholder="Ej: TORNEO123" />
                 </div>
-                <div class="admin-input-group">
-                    <label>¿ERES EL HOST? (CONTROLA LA RULETA)</label>
-                    <select id="consoleHostToggle">
-                        <option value="true">Sí (Transmito)</option>
-                        <option value="false">No (Solo recibo)</option>
-                    </select>
-                </div>
-                <div class="admin-row">
+                <div class="admin-row" id="sync-disconnected-controls">
                     <div class="admin-col">
                         <button class="admin-btn btn-primary" id="consoleBtnConnect">CONECTAR</button>
                     </div>
+                </div>
+                <div class="admin-row" id="sync-connected-controls" style="display: none; flex-direction: column; gap: 10px;">
+                    <button class="admin-btn btn-primary" id="consoleBtnCopyLink" onclick="copyLinkFromConsole()">🔗 Copiar Enlace de Transmisión</button>
+                    <button class="admin-btn btn-danger" onclick="disconnectMQTTFromConsole()">🔌 Salir de la Sala</button>
                 </div>
                 <div style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 8px;">
